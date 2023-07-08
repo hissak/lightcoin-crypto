@@ -7,7 +7,13 @@ class Transaction {
   }
 
   commit() {
-    this.account.balance += this.value
+    if (!this.isAllowed()) {
+      return null
+    }
+    // Keep track of the time of the transaction
+    this.time = new Date();
+    // Add the transaction to the account
+    this.account.addTransaction(this);
   }
 
 }
@@ -16,6 +22,9 @@ class Deposit extends Transaction {
   get value() {
     return this.amount
   }
+  isAllowed() {
+    return true
+  }
 
 }
 
@@ -23,6 +32,11 @@ class Withdrawal extends Transaction {
 
   get value() {
     return -this.amount
+  }
+  isAllowed() {
+    if ((this.account.balance - this.amount) > 0) {
+      return false
+    } else { return true }
   }
 
 }
@@ -34,10 +48,15 @@ class Account {
   constructor(username) {
     this.username = username;
     this.transactions = [];
+    console.log(this.transactions, 'TRANSACTIONS')
   }
 
   get balance() {
-    // Calculate the balance using the transaction objects.
+    let balance = 0;
+    for (let transaction of this.transactions) {
+      balance += transaction.value
+    }
+    return balance
   }
 
   addTransaction(transaction) {
